@@ -25,3 +25,9 @@ app.include_router(chat_router, prefix="/api")
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+
+@app.get("/")
+@app.head("/")
+def root():
+    return {"status": "healthy", "service": "franj-chatbot-api"}
