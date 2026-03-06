@@ -34,4 +34,5 @@ def test_settings_missing_required_vars(monkeypatch):
 
     with pytest.raises(ValidationError):
         # Initializing without the required LLM_API_KEY should fail
-        Settings()
+        # We pass _env_file=None to ensure it doesn't pick up the local .env file
+        Settings(_env_file=None)

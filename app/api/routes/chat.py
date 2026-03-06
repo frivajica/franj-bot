@@ -12,6 +12,8 @@ from app.services.llm_service import (fetch_resume_context,
 # Basic memory cache for the resume to avoid hitting Google Drive on every request
 _resume_cache = None
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app):
@@ -27,7 +29,6 @@ async def lifespan(app):
 
 
 router = APIRouter(lifespan=lifespan)
-logger = logging.getLogger(__name__)
 
 
 @router.post("/chat")

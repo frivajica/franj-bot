@@ -42,18 +42,22 @@ async def stream_chat(messages: list, system_prompt: str):
     """
     Streams the chat response from the LLM API via LiteLLM.
     """
-    settings = get_settings()
-
-    # Prepend the system prompt context to the conversation history
-    full_messages = [{"role": "system", "content": system_prompt}] + messages
-
-    response = await acompletion(
-        model="hosted_vllm/minimax_m2.5",
-        messages=full_messages,
-        api_key=settings.LLM_API_KEY,
-        api_base=settings.LLM_BASE_URL,
-        stream=True,
-    )
+    try:
+        settings = get_settings()
+        response = await acompletion(
+            model=settings.LLM_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                *messages
+            ],
+            api_key=settings.LLM_API_KEY,
+            base_url=settings.LLM_BASE_URL,
+            stream=True
+        )
+    except Exception as e:
+        # Handle potential errors during API call or settings retrieval
+        print(f"Error during LLM acompletion: {e}")
+        raise
 
     async for chunk in response:
         content = chunk.choices[0].delta.content
