@@ -18,7 +18,8 @@ A stateless, context-injected chatbot backend built with FastAPI and LiteLLM, in
    cp .env.example .env
    ```
    **Required Variables:**
-   - `MINIMAX_API_KEY`: Your MiniMax API key.
+   - `LLM_BASE_URL`: Your LLM base URL.
+   - `LLM_API_KEY`: Your LLM API key.
    - `RESUME_GDRIVE_URL`: A Google Drive direct-download link to export your `AboutFran.md` document as plain text. 
      - *Format example:* `https://docs.google.com/document/d/YOUR_DOC_ID/export?format=txt`
 

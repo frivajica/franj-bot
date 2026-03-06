@@ -14,7 +14,7 @@ def test_chat_endpoint_validation_error():
 def test_chat_endpoint_success(monkeypatch):
     """Test that the chat endpoint returns a streaming response."""
 
-    # We mock the LLM streaming function since we don't want to actually hit MiniMax in tests
+    # We mock the LLM streaming function since we don't want to actually hit the LLM in tests
     async def mock_stream_chat(*args, **kwargs):
         yield "Hello "
         yield "World!"

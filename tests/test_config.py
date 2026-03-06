@@ -7,8 +7,8 @@ from pydantic import ValidationError
 
 def test_settings_load_successfully(monkeypatch):
     """Test that valid environment variables load into the Settings object successfully."""
-    monkeypatch.setenv("MINIMAX_API_KEY", "test_key_123")
-    monkeypatch.setenv("MINIMAX_BASE_URL", "https://api.minimax.chat/v1")
+    monkeypatch.setenv("LLM_API_KEY", "test_key_123")
+    monkeypatch.setenv("LLM_BASE_URL", "https://api.minimax.chat/v1")
     monkeypatch.setenv(
         "RESUME_GDRIVE_URL",
         "https://docs.google.com/document/d/some_id/export?format=txt",
@@ -18,8 +18,8 @@ def test_settings_load_successfully(monkeypatch):
 
     settings = get_settings()
 
-    assert settings.MINIMAX_API_KEY == "test_key_123"
-    assert settings.MINIMAX_BASE_URL == "https://api.minimax.chat/v1"
+    assert settings.LLM_API_KEY == "test_key_123"
+    assert settings.LLM_BASE_URL == "https://api.minimax.chat/v1"
     assert (
         settings.RESUME_GDRIVE_URL
         == "https://docs.google.com/document/d/some_id/export?format=txt"
@@ -28,10 +28,10 @@ def test_settings_load_successfully(monkeypatch):
 
 def test_settings_missing_required_vars(monkeypatch):
     """Test that missing required keys raise a ValidationError immediately."""
-    monkeypatch.delenv("MINIMAX_API_KEY", raising=False)
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
 
     from app.config import Settings
 
     with pytest.raises(ValidationError):
-        # Initializing without the required MINIMAX_API_KEY should fail
+        # Initializing without the required LLM_API_KEY should fail
         Settings()

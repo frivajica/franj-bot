@@ -40,7 +40,7 @@ Resume Context:
 
 async def stream_chat(messages: list, system_prompt: str):
     """
-    Streams the chat response from the MiniMax API via LiteLLM.
+    Streams the chat response from the LLM API via LiteLLM.
     """
     settings = get_settings()
 
@@ -48,11 +48,10 @@ async def stream_chat(messages: list, system_prompt: str):
     full_messages = [{"role": "system", "content": system_prompt}] + messages
 
     response = await acompletion(
-        # We enforce minimax as the provider according to LiteLLM conventions
         model="hosted_vllm/minimax_m2.5",
         messages=full_messages,
-        api_key=settings.MINIMAX_API_KEY,
-        api_base=settings.MINIMAX_BASE_URL,
+        api_key=settings.LLM_API_KEY,
+        api_base=settings.LLM_BASE_URL,
         stream=True,
     )
 
