@@ -11,3 +11,7 @@ class Message(BaseModel):
 class ChatRequest(BaseModel):
     messages: List[Message] = Field(min_length=1)
     language: Optional[str] = Field(default="en", pattern="^(en|es)$")
+
+
+class RefreshRequest(BaseModel):
+    content: Optional[str] = None

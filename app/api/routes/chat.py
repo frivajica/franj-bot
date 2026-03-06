@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
 from app.config import get_settings
-from app.models.chat import ChatRequest
+from app.models.chat import ChatRequest, RefreshRequest
 from app.services.llm_service import (fetch_resume_context,
                                       generate_system_prompt, stream_chat)
 
@@ -60,3 +60,25 @@ async def chat_endpoint(request: ChatRequest):
     return StreamingResponse(
         stream_chat(messages_dicts, system_prompt), media_type="text/event-stream"
     )
+
+
+@router.post("/refresh-resume")
+async def refresh_resume(request: RefreshRequest | None = None):
+    """Forces the backend to re-download the resume from Google Drive."""
+    global _resume_cache
+    try:
+        if request and request.content:
+            logger.info("Updating resume from provided payload...")
+            _resume_cache = request.content
+            return {"status": "success", "message": "Resume context updated from payload."}
+
+        settings = get_settings()
+        logger.info("Manually refreshing resume from Google Drive...")
+        _resume_cache = await fetch_resume_context(settings.RESUME_GDRIVE_URL)
+        return {"status": "success", "message": "Resume context refreshed successfully."}
+    except Exception as e:
+        logger.error(f"Failed to refresh resume: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to refresh resume context: {e}",
+        )

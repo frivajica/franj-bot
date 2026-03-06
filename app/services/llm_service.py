@@ -8,7 +8,7 @@ async def fetch_resume_context(url: str) -> str:
     """
     Fetches the plain text context of the resume from a public Google Drive URL.
     """
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(follow_redirects=True) as client:
         response = await client.get(url)
         if response.status_code != 200:
             raise Exception("Failed to fetch resume context from Google Drive.")
@@ -52,6 +52,7 @@ async def stream_chat(messages: list, system_prompt: str):
             ],
             api_key=settings.LLM_API_KEY,
             base_url=settings.LLM_BASE_URL,
+            max_tokens=1000,
             stream=True
         )
     except Exception as e:
