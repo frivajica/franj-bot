@@ -57,32 +57,59 @@ Context:
 ---"""
 
 
-async def stream_chat(messages: list, system_prompt: str):
+async def stream_chat(messages: list, system_prompt: str, language: str = "en"):
     """
-    Streams the chat response from the LLM API via LiteLLM.
+    Streams the chat response from the LLM API via LiteLLM with professional fallback support.
     """
-    try:
-        settings = get_settings()
-        response = await acompletion(
-            model=settings.LLM_MODEL,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                *messages
-            ],
-            api_key=settings.LLM_API_KEY,
-            base_url=settings.LLM_BASE_URL,
-            temperature=0.7,
-            presence_penalty=0.5,
-            frequency_penalty=0.5,
-            max_tokens=1000,
-            stream=True
-        )
-    except Exception as e:
-        # Handle potential errors during API call or settings retrieval
-        print(f"Error during LLM acompletion: {e}")
-        raise
+    settings = get_settings()
+    last_exception = None
 
-    async for chunk in response:
-        content = chunk.choices[0].delta.content
-        if content:
-            yield content
+    # Yield nothing initially to ensure headers are sent as 200
+    yield ""
+
+    for config in settings.get_llm_providers():
+        try:
+            response = await acompletion(
+                **config,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    *messages
+                ],
+                temperature=0.7,
+                presence_penalty=0.5,
+                frequency_penalty=0.5,
+                max_tokens=1000,
+                stream=True
+            )
+
+            async for chunk in response:
+                content = chunk.choices[0].delta.content
+                if content:
+                    yield content
+            
+            # Successfully completed the stream, exit the function
+            return
+
+        except Exception as e:
+            # Handle Python 3.11+ ExceptionGroups which LiteLLM/OpenAI can raise
+            actual_error = e
+            if hasattr(e, "exceptions") and len(e.exceptions) > 0:
+                actual_error = e.exceptions[0]
+
+            last_exception = actual_error
+            print(f"LLM Provider {config['model']} failed: {actual_error}")
+            continue
+
+    if last_exception:
+        # Instead of crashing the whole stream, yield a friendly error message
+        if language == "es":
+            friendly_error = (
+                "\n\n*Mis disculpas, pero mis circuitos de IA están un poco sobrecargados en este momento* (Límite de LLM alcanzado). "
+                "¡Por favor, inténtalo de nuevo en un rato, o contacta a Fran directamente! 🤫"
+            )
+        else:
+            friendly_error = (
+                "\n\n*Apologies, but my AI circuits are a bit overloaded at the moment* (LLM Rate limit reached). "
+                "Please try again in a little while, or reach out to Fran directly! 🤫"
+            )
+        yield friendly_error

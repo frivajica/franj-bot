@@ -87,7 +87,8 @@ async def chat_endpoint(request: ChatRequest):
     ]
 
     return StreamingResponse(
-        stream_chat(messages_dicts, system_prompt), media_type="text/event-stream"
+        stream_chat(messages_dicts, system_prompt, language=request.language or "en"),
+        media_type="text/event-stream"
     )
 
 
