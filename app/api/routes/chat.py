@@ -31,6 +31,35 @@ async def lifespan(app):
 router = APIRouter(lifespan=lifespan)
 
 
+@router.get("/status")
+async def chat_status():
+    """
+    Pings the LLM API to check if it's available and under rate limits.
+    Returns 200 OK if the API is responsive, otherwise returns an error status.
+    """
+    settings = get_settings()
+    try:
+        from litellm import acompletion
+        # Send a tiny 1-token request to verify the API key and limits are healthy
+        response = await acompletion(
+            model=settings.LLM_MODEL,
+            messages=[{"role": "user", "content": "Reply with 'ok'"}],
+            api_key=settings.LLM_API_KEY,
+            base_url=settings.LLM_BASE_URL,
+            max_tokens=5,
+            timeout=5.0 # Fail fast so the frontend doesn't hang
+        )
+        if response and response.choices:
+            return {"status": "available"}
+        raise Exception("Invalid response from LLM provider")
+    except Exception as e:
+        logger.error(f"LLM API status check failed: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Chatbot API is currently unavailable or over capacity."
+        )
+
+
 @router.post("/chat")
 async def chat_endpoint(request: ChatRequest):
     if not request.messages:
