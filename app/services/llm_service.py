@@ -15,7 +15,7 @@ async def fetch_resume_context(url: str) -> str:
         return response.text
 
 
-def generate_system_prompt(resume_text: str, context_language: str = "en") -> str:
+def generate_system_prompt(context: str, context_language: str = "en") -> str:
     """
     Generates the system prompt to instruct the LLM on its personality, knowledge, and language rules.
     """
@@ -51,9 +51,9 @@ LANGUAGE RULES (CRITICAL):
 3. If it is the very first message of the conversation and the language is ambiguous,
    fall back to this language code: '{context_language}'.
 ---
-Resume Context:
+Context:
 ---
-{resume_text}
+{context}
 ---"""
 
 
